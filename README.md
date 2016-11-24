@@ -6,4 +6,4 @@ Check the air quality in the Bordeaux (FR) playgrounds
 
 * python 3
 * luigi
-
+* requests
