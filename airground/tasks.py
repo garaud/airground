@@ -17,7 +17,6 @@ from luigi.format import MixedUnicodeBytes, UTF8
 
 
 XLS_PLAYGROUND_DATA = 'http://databordeaux.blob.core.windows.net/data/dref/airejeux.xls'
-OPEN_WEATHER_APPID = os.environ.get("OPEN_WEATHER_APPID", "WRONG_KEY")
 
 
 def yesterday():
@@ -70,10 +69,3 @@ class WeatherStations(luigi.Task):
         df.columns = pd.Index([x.lower() for x in df.columns])
         df = df.rename_axis({"x_long": "lon",
                              "y_lat": "lat"}, axis=1)
-        bbox = bounding_box(df)
-        zoom = 6
-        bbox_url = ",".join("{:2.2f}".format(x) for x in
-                            [bbox['lon_top_left'], bbox['lat_top_left'],
-                             bbox['lon_bottom_right'], bbox['lat_bottom_right']])
-        # for the zoom
-        bbox_url += ",6"
