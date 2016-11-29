@@ -43,6 +43,7 @@ class RawPlaygroundExcelData(luigi.Task):
     """Download data about playground locations and types.
     """
     path = 'data/airejeux.xls'
+    priority = 10
 
     def output(self):
         return luigi.LocalTarget(self.path, format=MixedUnicodeBytes)
@@ -53,7 +54,7 @@ class RawPlaygroundExcelData(luigi.Task):
             fobj.write(resp.content)
 
 
-class WeatherStations(luigi.Task):
+class WeatherAirground(luigi.Task):
     date = luigi.DateParameter(default=yesterday())
     path = 'data/weather-stations-{}.json'
 
@@ -65,7 +66,7 @@ class WeatherStations(luigi.Task):
 
     def run(self):
         df = pd.read_excel(self.input().path, decimal=',')
-        # prefer lower case column name
+        # prefer lower case column names
         df.columns = pd.Index([x.lower() for x in df.columns])
         df = df.rename_axis({"x_long": "lon",
                              "y_lat": "lat"}, axis=1)
