@@ -15,6 +15,8 @@ import pandas as pd
 import luigi
 from luigi.format import MixedUnicodeBytes, UTF8
 
+from airground import weather
+
 
 XLS_PLAYGROUND_DATA = 'http://databordeaux.blob.core.windows.net/data/dref/airejeux.xls'
 
@@ -56,7 +58,7 @@ class RawPlaygroundExcelData(luigi.Task):
 
 class WeatherAirground(luigi.Task):
     date = luigi.DateParameter(default=yesterday())
-    path = 'data/weather-stations-{}.json'
+    path = 'data/weather-stations-{}.csv'
 
     def output(self):
         return luigi.LocalTarget(self.path.format(self.date), format=UTF8)
@@ -70,3 +72,8 @@ class WeatherAirground(luigi.Task):
         df.columns = pd.Index([x.lower() for x in df.columns])
         df = df.rename_axis({"x_long": "lon",
                              "y_lat": "lat"}, axis=1)
+        weather_df = weather.airground_weather_forecast(df)
+        res = pd.merge(df, weather_df, left_on="cle", right_on='id')
+        res = res.drop('cle', axis=1)
+        with self.output().open('w') as fobj:
+            res.to_csv(fobj)
