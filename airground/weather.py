@@ -135,3 +135,10 @@ if __name__ == '__main__':
     lon, lat = -0.604169377584603, 44.8550083242965
     dks_forcast = darksky_forecast(lat, lon)
     openw_forcast = openweather_forecast(lat, lon)
+    df = pd.read_excel('data/airejeux.xls', decimal=',')
+    # prefer lower case column names
+    df.columns = pd.Index([x.lower() for x in df.columns])
+    df = df.rename_axis({"x_long": "lon",
+                         "y_lat": "lat"}, axis=1)
+    top5 = df.head()
+    # wf = airground_weather_forecast(top5)
