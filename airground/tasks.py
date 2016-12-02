@@ -4,6 +4,7 @@
 """
 
 import os
+import json
 from datetime import date
 
 import requests
@@ -56,9 +57,9 @@ class RawPlaygroundExcelData(luigi.Task):
             fobj.write(resp.content)
 
 
-class WeatherAirground(luigi.Task):
+class OpenWeatherJsonAirground(luigi.Task):
     date = luigi.DateParameter(default=yesterday())
-    path = 'data/weather-stations-{}.csv'
+    path = 'data/open-weather-airground-{}.json'
 
     def output(self):
         return luigi.LocalTarget(self.path.format(self.date), format=UTF8)
@@ -72,8 +73,35 @@ class WeatherAirground(luigi.Task):
         df.columns = pd.Index([x.lower() for x in df.columns])
         df = df.rename_axis({"x_long": "lon",
                              "y_lat": "lat"}, axis=1)
-        weather_df = weather.airground_weather_forecast(df)
-        res = pd.merge(df, weather_df, left_on="cle", right_on='id')
-        res = res.drop('cle', axis=1)
+        forecasts = weather.airground_weather_forecast(df)
         with self.output().open('w') as fobj:
-            res.to_csv(fobj)
+            json.dump(forecasts, fobj)
+
+
+class DarkskyWeatherJsonAirground(luigi.Task):
+    date = luigi.DateParameter(default=yesterday())
+    path = 'data/darksky-weather-airground-{}.json'
+
+    def output(self):
+        return luigi.LocalTarget(self.path.format(self.date), format=UTF8)
+
+    def requires(self):
+        return RawPlaygroundExcelData()
+
+    def run(self):
+        df = pd.read_excel(self.input().path, decimal=',')
+        # prefer lower case column names
+        df.columns = pd.Index([x.lower() for x in df.columns])
+        df = df.rename_axis({"x_long": "lon",
+                             "y_lat": "lat"}, axis=1)
+        forecasts = weather.airground_weather_forecast(df)
+        with self.output().open('w') as fobj:
+            json.dump(forecasts, fobj)
+
+
+class JsonAirground(luigi.WrapperTask):
+    date = luigi.DateParameter(default=yesterday())
+
+    def requires(self):
+        yield OpenWeatherJsonAirground(self.date)
+        yield DarkskyWeatherJsonAirground(self.date)
