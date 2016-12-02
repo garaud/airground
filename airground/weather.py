@@ -108,7 +108,7 @@ def airground_weather_forecast(data, site_type='openweather'):
     site_type: str
        Site to get weather data
 
-    Return DataFrame
+    Return JSON weather forecast by airground
     """
     Logger.info("request weather for %s airground places", data.shape[0])
     Logger.info("Weather data come from '%s'", site_type)
@@ -117,28 +117,24 @@ def airground_weather_forecast(data, site_type='openweather'):
         raise ValueError("site_type is '{}'. It must be in {}".format(site_type, SUPPORTED_SITE))
     if site_type == 'openweather':
         forecast = openweather_forecast
-        model = openweather_datamodel
     if site_type == 'darksky':
         forecast = darksky_forecast
-        model = darksky_datamodel
     for _, airground in data.iterrows():
         lat, lon = airground[['lat', 'lon']]
-        wair = model(forecast(lat, lon))
-        for key in wair:
-            result[key].append(wair[key])
-        result['id'].append(airground['cle'])
-    return pd.DataFrame(result)
+        wair = forecast(lat, lon)
+        result[airground['cle']].append(wair)
+    return result
 
 
 if __name__ == '__main__':
     # close to the Parc Bordelais
     lon, lat = -0.604169377584603, 44.8550083242965
-    dks_forcast = darksky_forecast(lat, lon)
-    openw_forcast = openweather_forecast(lat, lon)
+    # dks_forcast = darksky_forecast(lat, lon)
+    # openw_forcast = openweather_forecast(lat, lon)
     df = pd.read_excel('data/airejeux.xls', decimal=',')
     # prefer lower case column names
     df.columns = pd.Index([x.lower() for x in df.columns])
     df = df.rename_axis({"x_long": "lon",
                          "y_lat": "lat"}, axis=1)
     top5 = df.head()
-    # wf = airground_weather_forecast(top5)
+    wf = airground_weather_forecast(top5)
