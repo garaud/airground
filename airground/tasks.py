@@ -58,7 +58,7 @@ class RawPlaygroundExcelData(luigi.Task):
 
 
 class OpenWeatherJsonAirground(luigi.Task):
-    date = luigi.DateParameter(default=yesterday())
+    date = luigi.DateParameter(default=date.today())
     path = 'data/open-weather-airground-{}.json'
 
     def output(self):
@@ -79,7 +79,7 @@ class OpenWeatherJsonAirground(luigi.Task):
 
 
 class DarkskyWeatherJsonAirground(luigi.Task):
-    date = luigi.DateParameter(default=yesterday())
+    date = luigi.DateParameter(default=date.today())
     path = 'data/darksky-weather-airground-{}.json'
 
     def output(self):
@@ -100,7 +100,7 @@ class DarkskyWeatherJsonAirground(luigi.Task):
 
 
 class JsonAirground(luigi.WrapperTask):
-    date = luigi.DateParameter(default=yesterday())
+    date = luigi.DateParameter(default=date.today())
 
     def requires(self):
         yield OpenWeatherJsonAirground(self.date)
