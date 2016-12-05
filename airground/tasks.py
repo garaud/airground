@@ -20,6 +20,17 @@ from airground import weather
 XLS_PLAYGROUND_DATA = 'http://databordeaux.blob.core.windows.net/data/dref/airejeux.xls'
 
 
+def read_airground(fpath):
+    """Read and preprocess the Airground DataFrame
+    """
+    df = pd.read_excel(fpath, decimal=',')
+    # prefer lower case column names
+    df.columns = pd.Index([x.lower() for x in df.columns])
+    df = df.rename_axis({"x_long": "lon",
+                         "y_lat": "lat"}, axis=1)
+    return df
+
+
 class RawPlaygroundExcelData(luigi.Task):
     """Download data about playground locations and types.
     """
@@ -48,11 +59,7 @@ class OpenWeatherJsonAirground(luigi.Task):
         return RawPlaygroundExcelData()
 
     def run(self):
-        df = pd.read_excel(self.input().path, decimal=',')
-        # prefer lower case column names
-        df.columns = pd.Index([x.lower() for x in df.columns])
-        df = df.rename_axis({"x_long": "lon",
-                             "y_lat": "lat"}, axis=1)
+        df = read_airground(self.input().path)
         forecasts = weather.airground_weather_forecast(df)
         with self.output().open('w') as fobj:
             json.dump(forecasts, fobj)
@@ -71,11 +78,7 @@ class DarkskyWeatherJsonAirground(luigi.Task):
         return RawPlaygroundExcelData()
 
     def run(self):
-        df = pd.read_excel(self.input().path, decimal=',')
-        # prefer lower case column names
-        df.columns = pd.Index([x.lower() for x in df.columns])
-        df = df.rename_axis({"x_long": "lon",
-                             "y_lat": "lat"}, axis=1)
+        df = read_airground(self.input().path)
         forecasts = weather.airground_weather_forecast(df)
         with self.output().open('w') as fobj:
             json.dump(forecasts, fobj)
