@@ -9,8 +9,6 @@ from datetime import date
 
 import requests
 
-from dateutil.relativedelta import relativedelta
-
 import pandas as pd
 
 import luigi
