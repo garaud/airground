@@ -22,26 +22,6 @@ from airground import weather
 XLS_PLAYGROUND_DATA = 'http://databordeaux.blob.core.windows.net/data/dref/airejeux.xls'
 
 
-def yesterday():
-    return date.today() - relativedelta(days=1)
-
-
-def bounding_box(coordinates):
-    """Return the bounding box from a list of coordinates
-
-    (lon,lat) top left to the bottom right
-
-    coordinates: DataFrame
-        (lon,lat)
-
-    Return top,bottom right/left point
-    """
-    return {"lon_top_left": coordinates["lon"].min(),
-            "lat_top_left": coordinates["lon"].max(),
-            "lon_bottom_right": coordinates["lat"].max(),
-            "lat_bottom_right": coordinates["lat"].min()}
-
-
 class RawPlaygroundExcelData(luigi.Task):
     """Download data about playground locations and types.
     """
