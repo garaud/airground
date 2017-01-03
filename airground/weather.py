@@ -83,7 +83,7 @@ def darksky_datamodel(data):
     # next hour
     weather = data['hourly']['data'][1]
     return {"temperature": weather['temperature'],
-            "at": datetime.fromtimestamp(weather['time']),
+            "at": pd.Timestamp.fromtimestamp(weather['time']),
             "desc": weather['summary'],
             "rain": weather['precipIntensity']}
 
@@ -96,7 +96,7 @@ def openweather_datamodel(data):
     # next 3-hour
     weather = data['list'][1]
     return {"temperature": weather['main']['temp'],
-            "at": datetime.fromtimestamp(weather['dt']),
+            "at": pd.Timestamp.fromtimestamp(weather['dt']),
             "desc": weather['weather'][0]['main'],
             "rain": weather['rain'].get("3h", 0)}
 
