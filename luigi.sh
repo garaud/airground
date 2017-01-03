@@ -7,4 +7,5 @@ cd $here/airground
 workers=3
 
 # luigi --workers $workers --parallel-scheduling --local-scheduler --module airground.tasks RawPlaygroundExcelData
-luigi --workers $workers --parallel-scheduling --local-scheduler --module airground.tasks JsonAirground
+# luigi --workers $workers --parallel-scheduling --local-scheduler --module airground.tasks RawJsonAirground
+luigi --workers $workers --parallel-scheduling --local-scheduler --module airground.tasks FilterWeatherDataToCSV
