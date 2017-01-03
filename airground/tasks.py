@@ -60,7 +60,7 @@ class OpenWeatherJsonAirground(luigi.Task):
 
     def run(self):
         df = read_airground(self.input().path)
-        forecasts = weather.airground_weather_forecast(df)
+        forecasts = weather.airground_weather_forecast(df, 'openweather')
         with self.output().open('w') as fobj:
             json.dump(forecasts, fobj)
 
@@ -79,12 +79,12 @@ class DarkskyWeatherJsonAirground(luigi.Task):
 
     def run(self):
         df = read_airground(self.input().path)
-        forecasts = weather.airground_weather_forecast(df)
+        forecasts = weather.airground_weather_forecast(df, 'darksky')
         with self.output().open('w') as fobj:
             json.dump(forecasts, fobj)
 
 
-class JsonAirground(luigi.WrapperTask):
+class RawJsonAirground(luigi.WrapperTask):
     """Wrap JSON weather API
     """
     date = luigi.DateParameter(default=date.today())
