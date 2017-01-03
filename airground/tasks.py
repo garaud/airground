@@ -92,3 +92,71 @@ class RawJsonAirground(luigi.WrapperTask):
     def requires(self):
         yield OpenWeatherJsonAirground(self.date)
         yield DarkskyWeatherJsonAirground(self.date)
+
+
+class FilterOpenWeatherData(luigi.Task):
+    """Just get temperature, precipitation data and weather description for each
+    available playground.
+    """
+    date = luigi.DateParameter(default=date.today())
+    path = 'data/filtered-openweather-{}.csv'
+
+    def output(self):
+        return luigi.LocalTarget(self.path.format(self.date), format=UTF8)
+
+    def requires(self):
+        return {"json": OpenWeatherJsonAirground(self.date),
+                "playground": RawPlaygroundExcelData()}
+
+    def run(self):
+        with self.input()["json"].open() as fobj:
+            data = json.load(fobj)
+            result = {key: weather.openweather_datamodel(playground[0])
+                      for key, playground in data.items()}
+        df = read_airground(self.input()["playground"].path)
+        # merge some data
+        result = pd.DataFrame(result).T
+        result.index = pd.Index(result.index.astype(int))
+        with self.output().open("w") as fobj:
+            (df[['cle', 'nom', 'age_min', 'age_max']]
+             .merge(result, left_on="cle", right_index=True)
+             .to_csv(fobj, index=False))
+
+
+class FilterDarkSkyData(luigi.Task):
+    """Just get temperature, precipitation data and weather description for each
+    available playground.
+    """
+    date = luigi.DateParameter(default=date.today())
+    path = 'data/filtered-darksky-{}.csv'
+
+    def output(self):
+        return luigi.LocalTarget(self.path.format(self.date), format=UTF8)
+
+    def requires(self):
+        return {"json": DarkskyWeatherJsonAirground(self.date),
+                "playground": RawPlaygroundExcelData()}
+
+    def run(self):
+        with self.input()["json"].open() as fobj:
+            data = json.load(fobj)
+            result = {key: weather.darksky_datamodel(playground[0])
+                      for key, playground in data.items()}
+        df = read_airground(self.input()["playground"].path)
+        # merge some data
+        result = pd.DataFrame(result).T
+        result.index = pd.Index(result.index.astype(int))
+        with self.output().open("w") as fobj:
+            (df[['cle', 'nom', 'age_min', 'age_max']]
+             .merge(result, left_on="cle", right_index=True)
+             .to_csv(fobj, index=False))
+
+
+class FilterWeatherDataToCSV(luigi.WrapperTask):
+    """Wrap filter data tasks
+    """
+    date = luigi.DateParameter(default=date.today())
+
+    def requires(self):
+        yield FilterOpenWeatherData(self.date)
+        yield FilterDarkSkyData(self.date)
