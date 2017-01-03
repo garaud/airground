@@ -95,10 +95,11 @@ def openweather_datamodel(data):
     """
     # next 3-hour
     weather = data['list'][1]
+    rain = weather.get('rain', {"3h": 0})
     return {"temperature": weather['main']['temp'],
             "at": pd.Timestamp.fromtimestamp(weather['dt']),
             "desc": weather['weather'][0]['main'],
-            "rain": weather['rain'].get("3h", 0)}
+            "rain": rain.get("3h", 0)}
 
 
 def airground_weather_forecast(data, site_type='openweather'):
